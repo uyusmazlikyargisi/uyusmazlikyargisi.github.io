@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uyuşmazlık Mahkemesi Dergisi Arşivi</title>
+    
+    <!-- YENİ: Google Fonts (Roboto) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- === YENİLENMİŞ CSS KODLARI === -->
+    <style>
+        /* === Genel Tema Ayarları (uyusmazlik.gov.tr'den esinlenilmiştir) === */
+        :root {
+            --um-blue: #0d47a1; /* Ana Mavi */
+            --um-blue-hover: #1565c0; /* Mavi Hover */
+            --um-gold: #c8a461; /* Vurgu Altın Rengi */
+            --um-gold-hover: #b89451; /* Altın Hover */
+            --um-dark-gray: #333333; /* Ana Metin Rengi */
+            --um-light-gray: #f5f5f5; /* Sayfa Arka Planı */
+            --um-border-gray: #dddddd; /* Kenarlık Rengi */
+        }
+
+        body {
+            background-color: var(--um-light-gray);
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--um-dark-gray);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Üstten başlaması için */
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 1400px; /* Daha geniş bir görünüm için */
+        }
+        
+        /* === Başlık Alanı === */
+        .main-header {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 4px solid var(--um-gold);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+        .main-header h1 {
+            color: var(--um-gold);
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        .main-header a {
+            color: var(--um-dark-gray);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .main-header a:hover {
+            color: var(--um-gold);
+        }
+        
+        /* === Dergi Seçim Alanı === */
+        .selection-area {
+            background-color: #ffffff;
+            padding: 30px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .selection-area h2 {
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--um-dark-gray);
+            font-weight: 500;
+        }
+
+        /* === Kapak Galerisi === */
+        #cover-library {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        .cover-item {
+            flex-basis: calc(25% - 32px);
+            max-width: 220px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--um-border-gray);
+        }
+        .cover-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .cover-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .cover-item p { margin: 0; font-size: 0.95em; color: var(--um-dark-gray); font-weight: 500; }
+        
+        /* === Mesaj ve Yükleme Alanları === */
+        #status-message {
+            font-size: 1.2em;
+            padding: 15px;
+            color: var(--um-gold);
+            font-weight: 500;
+            min-height: 25px;
+        }
+        #progress-container {
+            width: 80%; max-width: 600px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            margin: 0 auto 20px auto;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            display: none;
+        }
+        #progress-bar {
+            height: 20px; width: 0%;
+            background: linear-gradient(90deg, var(--um-gold) 0%, var(--um-gold-hover) 100%);
+            border-radius: 12px;
+            transition: width 0.4s ease;
+        }
+        #error-message {
+            color: #d93025; background-color: #fce8e6; border: 1px solid #d93025;
+            padding: 15px; border-radius: 8px; margin: 15px auto; max-width: 80%; display: none;
+        }
+        
+        /* === Kitap Görüntüleyici === */
+        #flipbook-viewport {
+            width: 95vw; height: 85vh;
+            max-width: 1200px; max-height: 800px;
+            margin: 0 auto; display: none;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        #flipbook { width: 100%; height: 100%; }
+        #flipbook .page { background-color: white; }
+        #flipbook .page canvas { display: block; margin: auto; }
+        
+        /* === Butonlar === */
+        .navigation-controls {
+            margin: 20px 0; display: none; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 25px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button:hover { transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        #prev-btn, #next-btn { background-color: var(--um-gold); }
+        #prev-btn:hover, #next-btn:hover { background-color: var(--um-gold-hover); }
+
+        #back-to-library-btn { background-color: #6c757d; }
+        #back-to-library-btn:hover { background-color: #5a6268; }
+
+        #download-pdf-btn { background-color: var(--um-gold); }
+        #download-pdf-btn:hover { background-color: var(--um-gold-hover); }
+
+        #page-counter {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--um-dark-gray);
+            padding: 0 10px;
+        }
+
+        /* === Duyarlılık === */
+        @media (max-width: 992px) { .cover-item { flex-basis: calc(33.33% - 32px); } }
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            .cover-item { flex-basis: calc(50% - 32px); }
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="./turn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="main-header">
+            <h1>Uyuşmazlık Yargısı Arşivi</h1>
+            <a href="https://www.uyusmazlik.gov.tr">Anasayfa</a>
+        </div>
+        
+        <div class="selection-area">
+            <h2>Kütüphaneden Bir Dergi Seçiniz</h2>
+            <div id="cover-library"></div>
+        </div>
+
+        <div id="status-message"></div>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="error-message"></div>
+        
+        <div id="flipbook-viewport" style="display: none;">
+            <div id="flipbook"></div>
+        </div>
+
+        <div class="navigation-controls">
+            <button id="back-to-library-btn">Dergilere Geri Dön</button>
+            <button id="prev-btn">« Önceki</button>
+            <span id="page-counter"></span>
+            <button id="next-btn">Sonraki »</button>
+            <button id="download-pdf-btn">PDF Olarak İndir</button>
+        </div>
+    </div>
+
+    <script>
+        const pdfLibrary = [
+            { name: "Uyuşmazlık Yargısı 1. Sayı", path: "pdfs/uy1.pdf", cover: "covers/uy1.jpg" },
+			{ name: "Uyuşmazlık Mahkemesi Dergisi 18. Sayı", path: "pdfs/18.pdf", cover: "covers/18.jpg" },
+			{ name: "Uyuşmazlık Mahkemesi Dergisi 17. Sayı", path: "pdfs/17.pdf", cover: "covers/17.jpg" },
+			{ name: "Uyuşmazlık Mahkemesi Dergisi 16. Sayı", path: "pdfs/16.pdf", cover: "covers/16.jpg" },
+			{ name: "Uyuşmazlık Mahkemesi Dergisi 15. Sayı", path: "pdfs/15.pdf", cover: "covers/15.jpg" },
+			{ name: "Uyuşmazlık Mahkemesi Dergisi 14. Sayı", path: "pdfs/14.pdf", cover: "covers/14.jpg" },
+			{ name: "Uyuşmazlık Mahkemesi Dergisi 13. Sayı", path: "pdfs/13.pdf", cover: "covers/13.jpg" }
+        ];
+
+        $(document).ready(function() {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+            const coverLibrary = $('#cover-library');
+            const statusMessage = $('#status-message');
+            const errorMessage = $('#error-message');
+            const flipbookViewport = $('#flipbook-viewport');
+            let flipbookContainer = $('#flipbook');
+            const navControls = $('.navigation-controls');
+            const selectionArea = $('.selection-area');
+            const mainHeader = $('.main-header');
+            const progressContainer = $('#progress-container');
+            const progressBar = $('#progress-bar');
+            
+            let currentPdfPath = '';
+
+            function showLibraryView() {
+                resetUI();
+                selectionArea.show();
+                mainHeader.show();
+                currentPdfPath = '';
+            }
+
+            function showBookView() {
+                selectionArea.hide();
+                mainHeader.hide();
+            }
+
+            function populateLibrary() {
+                pdfLibrary.forEach(pdf => {
+                    const coverItem = $(`<div class="cover-item" data-pdf-path="${pdf.path}"><img src="${pdf.cover}" alt="${pdf.name}"><p>${pdf.name}</p></div>`);
+                    coverLibrary.append(coverItem);
+                });
+            }
+
+            async function loadPdfFromUrl(url) {
+                currentPdfPath = url;
+                showBookView();
+                const absoluteUrl = new URL(url, window.location.href).href;
+                try {
+                    const pdfData = await fetch(absoluteUrl).then(res => {
+                        if (!res.ok) throw new Error(`Sunucu hatası: ${res.status}`);
+                        return res.arrayBuffer();
+                    });
+                    await renderPDF(new Uint8Array(pdfData));
+                } catch (error) {
+                    console.error("URL'den PDF yüklenirken hata:", error);
+                    showError(`Seçilen kitap yüklenemedi. Dosya yolu (${url}) veya sunucu erişimini kontrol edin.`);
+                    showLibraryView();
+                }
+            }
+            
+            function resetUI() {
+                if (flipbookContainer && flipbookContainer.data() && flipbookContainer.data().turn) {
+                    flipbookContainer.turn('destroy');
+                }
+                flipbookViewport.empty().append($('<div id="flipbook"></div>'));
+                flipbookContainer = $('#flipbook');
+                flipbookViewport.hide();
+                navControls.hide();
+                errorMessage.hide();
+                statusMessage.text('').hide();
+                progressContainer.hide();
+            }
+
+            async function renderPDF(pdfData) {
+                resetUI();
+                statusMessage.text('Dergi sayfaları hazırlanıyor...').show();
+                progressBar.css('width', '0%');
+                progressContainer.show();
+                
+                try {
+                    flipbookViewport.css({ visibility: 'hidden', display: 'block' });
+                    const targetPageWidth = flipbookViewport.width() / 2;
+                    const targetPageHeight = flipbookViewport.height();
+                    flipbookViewport.css({ visibility: 'visible', display: 'none' });
+                    if (!targetPageWidth || !targetPageHeight) throw new Error("Kitap alanı boyutları hesaplanamadı.");
+
+                    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                    const numPages = pdf.numPages;
+
+                    for (let i = 1; i <= numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const viewportDefault = page.getViewport({ scale: 1 });
+                        const scaleToFit = Math.min(targetPageWidth / viewportDefault.width, targetPageHeight / viewportDefault.height);
+                        const finalScale = scaleToFit * (1 / 1.1);
+                        const viewport = page.getViewport({ scale: finalScale });
+
+                        const canvas = document.createElement("canvas");
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        const pageDiv = $('<div>').addClass('page').css({
+                            display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden'
+                        }).append(canvas);
+                        flipbookContainer.append(pageDiv);
+                        
+                        await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+
+                        const progress = (i / numPages) * 100;
+                        progressBar.css('width', progress + '%');
+                    }
+                    
+                    progressContainer.hide();
+                    initializeTurnJs();
+
+                } catch (error) {
+                    console.error("PDF işleme sırasında hata:", error);
+                    progressContainer.hide();
+                    showError(`Bu PDF dosyası işlenemedi. Hata: ${error.message}`);
+                    showLibraryView();
+                }
+            }
+            
+            function initializeTurnJs() {
+                statusMessage.hide();
+                flipbookViewport.show();
+                flipbookContainer.turn({
+                    width: flipbookViewport.width(), height: flipbookViewport.height(),
+                    autoCenter: true, elevation: 50, gradients: true,
+                    when: { turned: (event, page) => updatePageCounter() }
+                });
+                navControls.css('display', 'flex');
+                updatePageCounter();
+            }
+
+            function showError(message) {
+                statusMessage.hide();
+                errorMessage.text(message).show();
+            }
+
+            function updatePageCounter() {
+                const currentPage = flipbookContainer.turn('page');
+                const totalPages = flipbookContainer.turn('pages');
+                $('#page-counter').text(`${currentPage} / ${totalPages}`);
+            }
+
+            coverLibrary.on('click', '.cover-item', function() {
+                loadPdfFromUrl($(this).data('pdf-path'));
+            });
+
+            $('#prev-btn').on('click', () => flipbookContainer.turn('previous'));
+            $('#next-btn').on('click', () => flipbookContainer.turn('next'));
+            $('#back-to-library-btn').on('click', showLibraryView);
+
+            $('#download-pdf-btn').on('click', function() {
+                if (!currentPdfPath) return;
+                const link = document.createElement('a');
+                link.href = currentPdfPath;
+                link.setAttribute('download', currentPdfPath.split('/').pop());
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            populateLibrary();
+        }); 
+        
+        window.addEventListener('load', () => {
+            const adElement = document.querySelector('a[href*="static.app"]');
+            if (adElement) adElement.remove();
+        });
+    </script>
+</body>
+</html>
